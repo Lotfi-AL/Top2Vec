@@ -38,10 +38,19 @@ except ImportError:
 try:
     from sentence_transformers import SentenceTransformer
 
-    _HAVE_TORCH = True
+    _HAVE_SENTENCE_TRANSFORMERS = True
 except ImportError:
-    _HAVE_TORCH = False
+    _HAVE_SENTENCE_TRANSFORMERS = False
 
+try:
+    from flair.data import Sentence
+    from flair.embeddings import TransformerDocumentEmbeddings
+
+    _HAVE_FLAIR = True
+except ImportError:
+    _HAVE_FLAIR = False
+    
+    
 logger = logging.getLogger('top2vec')
 logger.setLevel(logging.WARNING)
 sh = logging.StreamHandler()
@@ -51,7 +60,8 @@ logger.addHandler(sh)
 use_models = ["universal-sentence-encoder-multilingual",
               "universal-sentence-encoder",
               "universal-sentence-encoder-large",
-              "universal-sentence-encoder-multilingual-large"]
+              "universal-sentence-encoder-multilingual-large",
+              "flair"]
 
 use_model_urls = {
     "universal-sentence-encoder-multilingual": "https://tfhub.dev/google/universal-sentence-encoder-multilingual/3",
@@ -610,7 +620,7 @@ class Top2Vec:
 
             # embed words
             self.word_indexes = dict(zip(self.vocab, range(len(self.vocab))))
-            self.word_vectors = self._l2_normalize(np.array(self.embed(self.vocab)))
+            self.word_vectors = self._l2_normalize(np.array(self._get_embedding(self.vocab)))
 
             # embed documents
 
@@ -833,11 +843,11 @@ class Top2Vec:
             extra = len(train_corpus) % batch_size
 
             for ind in range(0, batches):
-                document_vectors.append(self.embed(train_corpus[current:current + batch_size]))
+                document_vectors.append(self._get_embedding(train_corpus[current:current + batch_size]))
                 current += batch_size
 
             if extra > 0:
-                document_vectors.append(self.embed(train_corpus[current:current + extra]))
+                document_vectors.append(self._get_embedding(train_corpus[current:current + extra]))
 
             document_vectors = self._l2_normalize(np.array(np.vstack(document_vectors)))
 
@@ -850,7 +860,28 @@ class Top2Vec:
         self._check_import_status()
         self._check_model_status()
 
-        return self._l2_normalize(np.array(self.embed([query])[0]))
+        return self._l2_normalize(np.array(self._get_embedding([query])[0]))
+
+    def _get_embedding(self, documents):
+
+        if isinstance(documents, str):
+            documents = [documents]
+
+        if self.embedding_model == 'flair':
+            embeddings = []
+            for index, document in enumerate(documents):
+                try:
+                    sentence = Sentence(document) if document else Sentence("an empty document")
+                    self.embed(sentence)
+                except RuntimeError:
+                    sentence = Sentence("an empty document")
+                    self.embed(sentence)
+                embedding = sentence.embedding.detach().cpu().numpy()
+                embeddings.append(embedding)
+            embeddings = np.asarray(embeddings)
+            return embeddings
+        else:
+            return self.embed(documents)
 
     def _create_topic_vectors(self, cluster_labels):
         unique_labels = set(cluster_labels)
@@ -1085,13 +1116,18 @@ class Top2Vec:
                               "Call index_word_vectors method before setting use_index=True.")
 
     def _check_import_status(self):
-        if self.embedding_model in use_models:
+        if self.embedding_model == 'flair':
+            if not _HAVE_FLAIR:
+                raise ImportError(f"{self.embedding_model} is not available.\n\n"
+                                  "Try: pip install top2vec[flair]\n\n"
+                                  "Alternatively try: pip install torch transformers flair")
+        elif self.embedding_model != 'distiluse-base-multilingual-cased':
             if not _HAVE_TENSORFLOW:
                 raise ImportError(f"{self.embedding_model} is not available.\n\n"
                                   "Try: pip install top2vec[sentence_encoders]\n\n"
                                   "Alternatively try: pip install tensorflow tensorflow_hub tensorflow_text")
-        elif self.embedding_model in sbert_models:
-            if not _HAVE_TORCH:
+        else:
+            if not _HAVE_SENTENCE_TRANSFORMERS:
                 raise ImportError(f"{self.embedding_model} is not available.\n\n"
                                   "Try: pip install top2vec[sentence_transformers]\n\n"
                                   "Alternatively try: pip install torch sentence_transformers")
@@ -1101,6 +1137,14 @@ class Top2Vec:
             if self.verbose is False:
                 logger.setLevel(logging.DEBUG)
 
+            if self.embedding_model == "flair":
+                if self.embedding_model_path is None:
+                    model = TransformerDocumentEmbeddings("roberta-base")
+                else:
+                    model = TransformerDocumentEmbeddings(self.embedding_model_path)
+                if "fine_tune" in model.__dict__:
+                    model.fine_tune = False
+                self.embed = model.embed
             if self.embedding_model in use_models:
                 if self.embedding_model_path is None:
                     logger.info(f'Downloading {self.embedding_model} model')

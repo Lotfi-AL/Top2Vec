@@ -43,6 +43,11 @@ setuptools.setup(
             'torch',
             'sentence_transformers',
         ],
+        'flair': [
+            "transformers>=4.0.0",
+            "torch>=1.5.0,!=1.8",
+            "flair==0.7"
+        ],
         'indexing': [
             'hnswlib',
         ],

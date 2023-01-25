@@ -1145,7 +1145,7 @@ class Top2Vec:
                 if "fine_tune" in model.__dict__:
                     model.fine_tune = False
                 self.embed = model.embed
-            if self.embedding_model in use_models:
+            elif self.embedding_model in use_models:
                 if self.embedding_model_path is None:
                     logger.info(f'Downloading {self.embedding_model} model')
                     module = use_model_urls[self.embedding_model]

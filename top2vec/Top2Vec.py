@@ -1138,9 +1138,12 @@ class Top2Vec:
                 logger.setLevel(logging.DEBUG)
 
             if self.embedding_model == "flair":
+                logger.info("Loading a flair model")
                 if self.embedding_model_path is None:
+                    logger.info("Downloading roberta-base")
                     model = TransformerDocumentEmbeddings("roberta-base")
                 else:
+                    logger.info(f'Downloading {self.embedding_model_path}')
                     model = TransformerDocumentEmbeddings(self.embedding_model_path)
                 if "fine_tune" in model.__dict__:
                     model.fine_tune = False
@@ -2743,7 +2746,8 @@ class Top2Vec:
                    dpi=200)
         plt.axis("off")
         plt.imshow(
-            WordCloud(width=1600,
+            WordCloud(width=400,
                       height=400,
                       background_color=background_color).generate_from_frequencies(word_score_dict))
         plt.title("Topic " + str(topic_num), loc='left', fontsize=25, pad=20)
+        return plt

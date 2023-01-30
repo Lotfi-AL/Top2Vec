@@ -836,8 +836,7 @@ class Top2Vec:
         # embed documents
         document_vectors = []
 
-        if (self.embedding_model in use_models) or self.embedding_model == "custom":
-
+        if (self.embedding_model in use_models) or self.embedding_model == "flair":
             current = 0
             batches = int(len(train_corpus) / batch_size)
             extra = len(train_corpus) % batch_size

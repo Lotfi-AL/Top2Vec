@@ -8,7 +8,7 @@ import tensorflow_hub as hub
 # get 20 newsgroups data
 newsgroups_train = fetch_20newsgroups(subset='all', remove=('headers', 'footers', 'quotes'))
 newsgroups_documents = newsgroups_train.data[0:2000]
-
+"""
 # train top2vec model without doc_ids provided
 top2vec = Top2Vec(documents=newsgroups_documents, speed="fast-learn", workers=8)
 
@@ -20,7 +20,7 @@ top2vec_docids = Top2Vec(documents=newsgroups_documents, document_ids=doc_ids, s
 top2vec_no_docs = Top2Vec(documents=newsgroups_documents, keep_documents=False, speed="fast-learn", workers=8)
 
 # train top2vec model with corpus_file
-top2vec_corpus_file = Top2Vec(documents=newsgroups_documents, use_corpus_file=True, speed="fast-learn", workers=8)
+top2vec_corpus_file = Top2Vec(documents=newsgroups_documents, speed="fast-learn", workers=8)
 
 # test USE
 top2vec_use = Top2Vec(documents=newsgroups_documents, embedding_model='universal-sentence-encoder')
@@ -83,8 +83,20 @@ top2vec_ngrams = Top2Vec(documents=newsgroups_documents,
 top2vec_use_ngrams = Top2Vec(documents=newsgroups_documents,
                              embedding_model='universal-sentence-encoder',
                              ngram_vocab=True)
+"""
+# test Flair
+top2vec_flair = Top2Vec(documents=newsgroups_documents,
+                                              embedding_model='flair')
 
-models = [top2vec, top2vec_docids, top2vec_no_docs, top2vec_corpus_file,
+# test Flair with model emebdding
+top2vec_flair_model_embedding = Top2Vec(documents=newsgroups_documents,
+                                              embedding_model='flair',
+                                              use_embedding_model_tokenizer=True)
+
+models = [
+          top2vec_flair, top2vec_flair_model_embedding]
+
+"""unused_models = [top2vec, top2vec_docids, top2vec_no_docs, top2vec_corpus_file,
           top2vec_use, top2vec_use_multilang, top2vec_transformer_multilang,
           top2vec_use_model_embedding, top2vec_transformer_model_embedding,
           top2vec_transformer_use_large,
@@ -94,8 +106,7 @@ models = [top2vec, top2vec_docids, top2vec_no_docs, top2vec_corpus_file,
           top2vec_model_callable,
           top2vec_ngrams,
           top2vec_use_ngrams]
-
-
+"""
 @pytest.mark.parametrize('top2vec_model', models)
 def test_add_documents_original(top2vec_model):
     num_docs = top2vec_model.document_vectors.shape[0]

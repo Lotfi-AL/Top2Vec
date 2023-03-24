@@ -18,6 +18,7 @@ import tempfile
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import normalize
 from scipy.special import softmax
+from flair.embeddings import TransformerWordEmbeddings
 
 try:
     import hnswlib
@@ -400,9 +401,15 @@ class Top2Vec:
                  use_embedding_model_tokenizer=False,
                  umap_args=None,
                  hdbscan_args=None,
-                 verbose=True
+                 verbose=True,
+                 sentence_transformer=False,
+                 transformer_document_embeddings=False,
+                 transformer_word_embeddings=False
                  ):
 
+        self.sentence_transformer = sentence_transformer
+        self.transformer_document_embeddings = transformer_document_embeddings
+        self.transformer_word_embeddings = transformer_word_embeddings
         if verbose:
             logger.setLevel(logging.DEBUG)
             self.verbose = True
@@ -1143,7 +1150,15 @@ class Top2Vec:
                     model = TransformerDocumentEmbeddings("roberta-base")
                 else:
                     logger.info(f'Downloading {self.embedding_model_path}')
-                    model = TransformerDocumentEmbeddings(self.embedding_model_path)
+                    if self.sentence_transformer:
+                        logger.info(f"Downloading sentence transformer {embedding_model_path}")
+                        model = SentenceTransformer(self.embedding_model_path)
+                    elif self.transformer_document_embeddings:
+                        logger.info(f"Downloading transformer document embeddings {embedding_model_path}")
+                        model = TransformerDocumentEmbeddings(self.embedding_model_path)
+                    else:
+                        logger.info(f"Downloading transformer word embeddings {embedding_model_path}")
+                        model = TransformerWordEmbeddings(self.embedding_model_path)
                 if "fine_tune" in model.__dict__:
                     model.fine_tune = False
                 self.embed = model.embed

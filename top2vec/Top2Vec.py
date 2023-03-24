@@ -1151,13 +1151,13 @@ class Top2Vec:
                 else:
                     logger.info(f'Downloading {self.embedding_model_path}')
                     if self.sentence_transformer:
-                        logger.info(f"Downloading sentence transformer {embedding_model_path}")
+                        logger.info(f"Downloading sentence transformer {self.embedding_model_path}")
                         model = SentenceTransformer(self.embedding_model_path)
                     elif self.transformer_document_embeddings:
-                        logger.info(f"Downloading transformer document embeddings {embedding_model_path}")
+                        logger.info(f"Downloading transformer document embeddings {self.embedding_model_path}")
                         model = TransformerDocumentEmbeddings(self.embedding_model_path)
                     else:
-                        logger.info(f"Downloading transformer word embeddings {embedding_model_path}")
+                        logger.info(f"Downloading transformer word embeddings {self.embedding_model_path}")
                         model = TransformerWordEmbeddings(self.embedding_model_path)
                 if "fine_tune" in model.__dict__:
                     model.fine_tune = False

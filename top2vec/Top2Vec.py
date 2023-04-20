@@ -71,7 +71,7 @@ use_model_urls = {
     "universal-sentence-encoder-multilingual-large": "https://tfhub.dev/google/universal-sentence-encoder"
                                                      "-multilingual-large/3"
 }
-
+# Add sentence transformer model names here to get them to work
 sbert_models = ["distiluse-base-multilingual-cased",
                 "all-MiniLM-L6-v2",
                 "paraphrase-multilingual-MiniLM-L12-v2",

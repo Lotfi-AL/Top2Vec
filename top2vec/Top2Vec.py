@@ -77,7 +77,9 @@ sbert_models = ["distiluse-base-multilingual-cased",
                 "paraphrase-multilingual-MiniLM-L12-v2",
                 "NbAiLab/nb-sbert-base",
                 "all-roberta-large-v1",
-                "all-miniLM-L12-v2"]
+                "all-miniLM-L12-v2",
+                "universal-sentence-encoder-multilingual-v2"]
+
 
 acceptable_embedding_models = use_models + sbert_models
 

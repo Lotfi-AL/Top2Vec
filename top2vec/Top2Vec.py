@@ -879,7 +879,7 @@ class Top2Vec:
         if isinstance(documents, str):
             documents = [documents]
 
-        if self.embedding_model == 'flair':
+        if self.embedding_model == 'flair' and not self.transformer_word_embeddings:
             embeddings = []
             for index, document in enumerate(documents):
                 try:
@@ -1165,7 +1165,7 @@ class Top2Vec:
                         logger.info(f"Downloading transformer document embeddings {self.embedding_model_path}")
                         model = TransformerDocumentEmbeddings(self.embedding_model_path)
                         self.embed = model.embed
-                    else:
+                    elif self.transformer_word_embeddings:
                         logger.info(f"Downloading transformer word embeddings {self.embedding_model_path}")
                         model = TransformerWordEmbeddings(self.embedding_model_path)
                         self.embed = model.embed
@@ -1202,6 +1202,7 @@ class Top2Vec:
 
         if self.verbose is False:
             logger.setLevel(logging.WARNING)
+
 
     @staticmethod
     def _less_than_zero(num, var_name):

@@ -1168,7 +1168,7 @@ class Top2Vec:
                     else:
                         logger.info(f"Downloading transformer word embeddings {self.embedding_model_path}")
                         model = TransformerWordEmbeddings(self.embedding_model_path)
-                        self.embed = model.encode()
+                        self.embed = model.embed
                 if "fine_tune" in model.__dict__:
                     model.fine_tune = False
                 

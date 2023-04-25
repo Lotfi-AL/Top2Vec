@@ -1154,20 +1154,24 @@ class Top2Vec:
                 if self.embedding_model_path is None:
                     logger.info("Downloading roberta-base")
                     model = TransformerDocumentEmbeddings("roberta-base")
+                    self.embed = model.embed
                 else:
                     logger.info(f'Downloading {self.embedding_model_path}')
                     if self.sentence_transformer:
                         logger.info(f"Downloading sentence transformer {self.embedding_model_path}")
                         model = SentenceTransformer(self.embedding_model_path)
+                        self.embed = model.embed
                     elif self.transformer_document_embeddings:
                         logger.info(f"Downloading transformer document embeddings {self.embedding_model_path}")
                         model = TransformerDocumentEmbeddings(self.embedding_model_path)
+                        self.embed = model.embed
                     else:
                         logger.info(f"Downloading transformer word embeddings {self.embedding_model_path}")
                         model = TransformerWordEmbeddings(self.embedding_model_path)
+                        self.embed = model.encode()
                 if "fine_tune" in model.__dict__:
                     model.fine_tune = False
-                self.embed = model.embed
+                
             elif self.embedding_model in use_models:
                 if self.embedding_model_path is None:
                     logger.info(f'Downloading {self.embedding_model} model')
